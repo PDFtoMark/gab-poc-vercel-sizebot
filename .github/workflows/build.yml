@@ -1,0 +1,22 @@
+name: (Runtime) Build and Test
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions: {}
+jobs:
+  sizebot:
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Write results
+        run: echo '{"version":1,"status":"ok","baseSha":"aaaaaaa","headSha":"bbbbbbb","artifacts":[]}' > sizebot-results.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sizebot-results
+          path: sizebot-results.json
