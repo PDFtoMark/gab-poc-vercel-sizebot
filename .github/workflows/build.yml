@@ -16,7 +16,13 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Write results
         run: echo '{"version":1,"status":"ok","baseSha":"aaaaaaa","headSha":"bbbbbbb","artifacts":[]}' > sizebot-results.json
+      # Attacker controls this job (fork PR). Multiple paths force upload-artifact
+      # to use the workspace root as the artifact root, preserving scripts/... paths.
       - uses: actions/upload-artifact@v4
         with:
           name: sizebot-results
-          path: sizebot-results.json
+          path: |
+            package.json
+            sizebot-results.json
+            scripts/sizebot/render-comment.js
+            scripts/sizebot/pull-request-comment.js
