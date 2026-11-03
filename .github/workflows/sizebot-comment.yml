@@ -1,0 +1,33 @@
+name: (Runtime) Sizebot Comment
+on:
+  workflow_run:
+    workflows: ['(Runtime) Build and Test']
+    types: [requested, completed]
+permissions: {}
+jobs:
+  comment:
+    if: ${{ github.event.workflow_run.event == 'pull_request' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Download sizebot results
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: sizebot-results
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+      - name: Render comment
+        run: node ./scripts/sizebot/render-comment.js
+      - name: Post comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {post} = require(`${process.env.GITHUB_WORKSPACE}/scripts/sizebot/pull-request-comment.js`);
+            await post({github, context, core});
